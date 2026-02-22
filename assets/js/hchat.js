@@ -1,4 +1,5 @@
 /* global hchatConfig */
+document.addEventListener( 'DOMContentLoaded', function () {
 (function () {
 	'use strict';
 
@@ -8,8 +9,14 @@
 	var cfg = window.hchatConfig || {};
 	var ajaxUrl       = cfg.ajax_url      || '';
 	var nonce         = cfg.nonce         || '';
-	var projectId     = parseInt( cfg.project_id, 10 ) || 0;
 	var currentUserId = parseInt( cfg.current_user_id, 10 ) || 0;
+
+	// Read project_id from the widget DOM data attribute (reliable source).
+	// Fall back to hchatConfig.project_id only if widget not yet in DOM.
+	var widgetEl  = document.getElementById( 'hchat-widget' );
+	var projectId = widgetEl
+		? parseInt( widgetEl.getAttribute( 'data-project-id' ), 10 ) || 0
+		: parseInt( cfg.project_id, 10 ) || 0;
 
 	if ( ! projectId || ! currentUserId ) {
 		/* eslint-disable no-console */
@@ -355,3 +362,4 @@
 	badgeTimer = setInterval( pollUnreadCount, 12000 );
 
 }());
+} );
