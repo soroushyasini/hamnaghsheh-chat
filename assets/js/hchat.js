@@ -28,29 +28,47 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	/* ---------------------------------------------------------------
 	   DOM references
 	--------------------------------------------------------------- */
-	var widget          = document.getElementById( 'hchat-widget' );
-	var toggleBtn       = document.getElementById( 'hchat-toggle-btn' );
-	var closeBtn        = document.getElementById( 'hchat-close-btn' );
-	var panel           = document.getElementById( 'hchat-panel' );
-	var messagesArea    = document.getElementById( 'hchat-messages' );
-	var messageList     = document.getElementById( 'hchat-message-list' );
-	var loadEarlierBtn  = document.getElementById( 'hchat-load-earlier-btn' );
-	var emptyState      = document.getElementById( 'hchat-empty-state' );
-	var inputEl         = document.getElementById( 'hchat-input' );
-	var sendBtn         = document.getElementById( 'hchat-send-btn' );
-	var badge           = document.getElementById( 'hchat-badge' );
+	var widget                  = document.getElementById( 'hchat-widget' );
+	var toggleBtn               = document.getElementById( 'hchat-toggle-btn' );
+	var closeBtn                = document.getElementById( 'hchat-close-btn' );
+	var panel                   = document.getElementById( 'hchat-panel' );
+	var chatPane                = document.getElementById( 'hchat-chat-pane' );
+	var activityPane            = document.getElementById( 'hchat-activity-pane' );
+	var messagesArea            = document.getElementById( 'hchat-messages' );
+	var messageList             = document.getElementById( 'hchat-message-list' );
+	var loadEarlierBtn          = document.getElementById( 'hchat-load-earlier-btn' );
+	var emptyState              = document.getElementById( 'hchat-empty-state' );
+	var inputEl                 = document.getElementById( 'hchat-input' );
+	var sendBtn                 = document.getElementById( 'hchat-send-btn' );
+	var badge                   = document.getElementById( 'hchat-badge' );
+	var tabButtons              = document.querySelectorAll( '.hchat-tab' );
+	var chatBadgeTab            = document.getElementById( 'hchat-chat-badge-tab' );
+	var activityBadgeTab        = document.getElementById( 'hchat-activity-badge-tab' );
+	var activityList            = document.getElementById( 'hchat-activity-list' );
+	var activityEmpty           = document.getElementById( 'hchat-activity-empty' );
+	var loadEarlierActivityBtn  = document.getElementById( 'hchat-load-earlier-activity-btn' );
+	var fileDropdown            = document.getElementById( 'hchat-file-dropdown' );
 
 	if ( ! widget ) { return; }
 
 	/* ---------------------------------------------------------------
 	   State
 	--------------------------------------------------------------- */
-	var isOpen        = false;
-	var lastMessageId = 0;
-	var firstMessageId = 0;
-	var isSending     = false;
-	var pollTimer     = null;
-	var badgeTimer    = null;
+	var isOpen             = false;
+	var lastMessageId      = 0;
+	var firstMessageId     = 0;
+	var isSending          = false;
+	var pollTimer          = null;
+	var badgeTimer         = null;
+	var activeTab          = 'chat';
+	var activityLoaded     = false;
+	var lastActivityId     = 0;
+	var firstActivityId    = 0;
+	var activityPollTimer  = null;
+	var activityBadgeTimer = null;
+	var fileCache          = null;
+	var dropdownActiveIdx  = -1;
+	var atQuery            = null; // current @query string or null
 
 	/* ---------------------------------------------------------------
 	   Utility helpers
@@ -62,6 +80,27 @@ document.addEventListener( 'DOMContentLoaded', function () {
 				hour:   '2-digit',
 				minute: '2-digit'
 			} ).format( d );
+		} catch ( e ) {
+			return dateStr;
+		}
+	}
+
+	function formatActivityTime( dateStr ) {
+		try {
+			var d = new Date( dateStr.replace( / /g, 'T' ) );
+			var now = new Date();
+			var today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+			var yesterday = new Date( today - 86400000 );
+			var dDay = new Date( d.getFullYear(), d.getMonth(), d.getDate() );
+			var timeStr = new Intl.DateTimeFormat( 'fa-IR-u-ca-persian', { hour: '2-digit', minute: '2-digit' } ).format( d );
+			if ( dDay.getTime() === today.getTime() ) {
+				return timeStr;
+			} else if ( dDay.getTime() === yesterday.getTime() ) {
+				return 'دیروز • ' + timeStr;
+			} else {
+				var dateStr2 = new Intl.DateTimeFormat( 'fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' } ).format( d );
+				return dateStr2 + ' • ' + timeStr;
+			}
 		} catch ( e ) {
 			return dateStr;
 		}
@@ -81,6 +120,37 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		return div.innerHTML;
 	}
 
+	var activityIcons = {
+		upload:   '📤',
+		replace:  '🔄',
+		delete:   '🗑️',
+		download: '📥',
+		see:      '👁️'
+	};
+
+	var activityLabels = {
+		upload:   'آپلود شد',
+		replace:  'جایگزین شد',
+		delete:   'حذف شد',
+		download: 'دانلود شد',
+		see:      'مشاهده شد'
+	};
+
+	/* ---------------------------------------------------------------
+	   Parse @[filename|id] tokens into styled HTML
+	--------------------------------------------------------------- */
+	function parseFileTags( text ) {
+		return text.replace( /@\[([^\]|]+)\|(\d+)\]/g, function ( match, name, id ) {
+			var isDeleted = ! fileCache || ! fileCache.find( function ( f ) {
+				return parseInt( f.id, 10 ) === parseInt( id, 10 );
+			} );
+			if ( isDeleted && name === 'deleted' ) {
+				return '<span class="hchat-file-tag hchat-file-tag--deleted">📎 فایل حذف شده</span>';
+			}
+			return '<span class="hchat-file-tag" data-file-id="' + escapeHtml( id ) + '">📎 ' + escapeHtml( name ) + '</span>';
+		} );
+	}
+
 	/* ---------------------------------------------------------------
 	   Render a single message bubble
 	--------------------------------------------------------------- */
@@ -92,11 +162,41 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		var div = document.createElement( 'div' );
 		div.className = 'hchat-msg ' + cls;
 		div.dataset.id = msg.id;
+
+		var escapedMsg = escapeHtml( msg.message );
+		var parsedMsg  = parseFileTags( escapedMsg );
+
 		div.innerHTML =
-			'<div class="hchat-msg__bubble">' + escapeHtml( msg.message ) + '</div>' +
+			'<div class="hchat-msg__bubble">' + parsedMsg + '</div>' +
 			'<div class="hchat-msg__meta">' +
 				'<span class="hchat-msg__sender">' + escapeHtml( msg.sender_name ) + '</span>' +
-				'<span class="hchat-msg__time">'   + escapeHtml( time )           + '</span>' +
+				'<span class="hchat-msg__time">'   + escapeHtml( time )            + '</span>' +
+			'</div>';
+		return div;
+	}
+
+	/* ---------------------------------------------------------------
+	   Render a single activity card
+	--------------------------------------------------------------- */
+	function renderActivityCard( ev, unseen ) {
+		var icon    = activityIcons[ ev.action_type ]  || '📄';
+		var label   = activityLabels[ ev.action_type ] || ev.action_type;
+		var timeStr = formatActivityTime( ev.created_at );
+
+		var div = document.createElement( 'div' );
+		div.className = 'hchat-activity-card' + ( unseen ? ' hchat-activity-card--unseen' : '' );
+		div.dataset.id = ev.id;
+
+		div.innerHTML =
+			'<div class="hchat-activity-icon">' + icon + '</div>' +
+			'<div class="hchat-activity-body">' +
+				'<span class="hchat-activity-filename">' + escapeHtml( ev.file_name || 'فایل حذف شده' ) + '</span>' +
+				'<span class="hchat-activity-action">'   + escapeHtml( label ) + '</span>' +
+				'<div class="hchat-activity-meta">' +
+					'<span class="hchat-activity-user">' + escapeHtml( ev.display_name ) + '</span>' +
+					'<span class="hchat-activity-dot">•</span>' +
+					'<span class="hchat-activity-time">' + escapeHtml( timeStr ) + '</span>' +
+				'</div>' +
 			'</div>';
 		return div;
 	}
@@ -147,6 +247,39 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	function updateEmptyState() {
 		var hasMessages = messageList.children.length > 0;
 		emptyState.style.display  = hasMessages ? 'none' : 'flex';
+	}
+
+	/* ---------------------------------------------------------------
+	   Activity rendering helpers
+	--------------------------------------------------------------- */
+	function appendActivityEvents( events, unseen ) {
+		if ( ! events || ! events.length ) { return; }
+		var frag = document.createDocumentFragment();
+		events.forEach( function ( ev ) {
+			frag.appendChild( renderActivityCard( ev, unseen ) );
+			var id = parseInt( ev.id, 10 );
+			if ( id > lastActivityId )  { lastActivityId  = id; }
+			if ( firstActivityId === 0 || id < firstActivityId ) { firstActivityId = id; }
+		} );
+		activityList.appendChild( frag );
+		updateActivityEmpty();
+	}
+
+	function prependActivityEvents( events ) {
+		if ( ! events || ! events.length ) { return; }
+		var frag = document.createDocumentFragment();
+		events.forEach( function ( ev ) {
+			frag.appendChild( renderActivityCard( ev, false ) );
+			var id = parseInt( ev.id, 10 );
+			if ( firstActivityId === 0 || id < firstActivityId ) { firstActivityId = id; }
+		} );
+		activityList.insertBefore( frag, activityList.firstChild );
+		updateActivityEmpty();
+	}
+
+	function updateActivityEmpty() {
+		var hasEvents = activityList.children.length > 0;
+		activityEmpty.style.display = hasEvents ? 'none' : 'flex';
 	}
 
 	/* ---------------------------------------------------------------
@@ -295,11 +428,134 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	}
 
 	/* ---------------------------------------------------------------
+	   Activity — load initial events
+	--------------------------------------------------------------- */
+	function loadInitialActivity() {
+		get( 'hchat_get_activity', { after_id: 0 }, function ( err, res ) {
+			if ( err || ! res.success ) { return; }
+			activityLoaded = true;
+			appendActivityEvents( res.data, false );
+			if ( firstActivityId > 0 ) {
+				loadEarlierActivityBtn.style.display = 'block';
+			}
+			// Mark all seen.
+			if ( lastActivityId > 0 ) {
+				post( 'hchat_mark_activity_seen', { last_log_id: lastActivityId }, function () {} );
+				setActivityTabBadge( 0 );
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------
+	   Activity — poll for new events (when activity tab is active)
+	--------------------------------------------------------------- */
+	function pollNewActivity() {
+		get( 'hchat_get_activity', { after_id: lastActivityId }, function ( err, res ) {
+			if ( err || ! res.success ) { return; }
+			if ( res.data && res.data.length ) {
+				appendActivityEvents( res.data, false );
+				if ( lastActivityId > 0 ) {
+					post( 'hchat_mark_activity_seen', { last_log_id: lastActivityId }, function () {} );
+				}
+				setActivityTabBadge( 0 );
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------
+	   Activity — poll unseen count badge (every 15s always)
+	--------------------------------------------------------------- */
+	function pollActivityUnseenCount() {
+		get( 'hchat_activity_unseen_count', {}, function ( err, res ) {
+			if ( err || ! res.success ) { return; }
+			var count = parseInt( res.data.count, 10 ) || 0;
+			if ( activeTab !== 'activity' ) {
+				setActivityTabBadge( count );
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------
+	   Activity — load earlier events
+	--------------------------------------------------------------- */
+	function loadEarlierActivity() {
+		loadEarlierActivityBtn.disabled = true;
+		get( 'hchat_load_earlier_activity', { before_id: firstActivityId }, function ( err, res ) {
+			loadEarlierActivityBtn.disabled = false;
+			if ( err || ! res.success ) { return; }
+			var data = res.data;
+			prependActivityEvents( data );
+			if ( data.length < 20 ) {
+				loadEarlierActivityBtn.style.display = 'none';
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------
+	   Tab badge helpers
+	--------------------------------------------------------------- */
+	function setActivityTabBadge( count ) {
+		if ( count > 0 ) {
+			activityBadgeTab.textContent = count;
+			activityBadgeTab.classList.add( 'hchat-tab-badge--visible' );
+		} else {
+			activityBadgeTab.textContent = '';
+			activityBadgeTab.classList.remove( 'hchat-tab-badge--visible' );
+		}
+	}
+
+	/* ---------------------------------------------------------------
+	   Tab switching
+	--------------------------------------------------------------- */
+	function switchTab( tab ) {
+		activeTab = tab;
+
+		tabButtons.forEach( function ( btn ) {
+			if ( btn.getAttribute( 'data-tab' ) === tab ) {
+				btn.classList.add( 'hchat-tab--active' );
+			} else {
+				btn.classList.remove( 'hchat-tab--active' );
+			}
+		} );
+
+		if ( tab === 'chat' ) {
+			chatPane.style.display     = 'flex';
+			activityPane.style.display = 'none';
+
+			// Stop activity polling.
+			if ( activityPollTimer ) {
+				clearInterval( activityPollTimer );
+				activityPollTimer = null;
+			}
+		} else {
+			chatPane.style.display     = 'none';
+			activityPane.style.display = 'flex';
+
+			// Clear activity badge.
+			setActivityTabBadge( 0 );
+
+			// Load activities lazily on first open.
+			if ( ! activityLoaded ) {
+				loadInitialActivity();
+			} else if ( lastActivityId > 0 ) {
+				// Mark seen immediately on tab switch.
+				post( 'hchat_mark_activity_seen', { last_log_id: lastActivityId }, function () {} );
+			}
+
+			// Start activity polling.
+			if ( ! activityPollTimer ) {
+				activityPollTimer = setInterval( pollNewActivity, 15000 );
+			}
+		}
+	}
+
+	/* ---------------------------------------------------------------
 	   Open / close panel
 	--------------------------------------------------------------- */
 	function openPanel() {
 		isOpen = true;
 		panel.style.display = 'flex';
+		switchTab( 'chat' );
 		scrollToBottom();
 		markRead();
 
@@ -312,13 +568,177 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	function closePanel() {
 		isOpen = false;
 		panel.style.display = 'none';
+		activeTab = 'chat';
 
-		// Stop message polling when panel is closed; keep badge polling.
+		// Stop polling timers.
 		if ( pollTimer ) {
 			clearInterval( pollTimer );
 			pollTimer = null;
 		}
+		if ( activityPollTimer ) {
+			clearInterval( activityPollTimer );
+			activityPollTimer = null;
+		}
+
+		hideFileDropdown();
 	}
+
+	/* ---------------------------------------------------------------
+	   File autocomplete — fetch project files (cached)
+	--------------------------------------------------------------- */
+	function fetchProjectFiles( cb ) {
+		if ( fileCache !== null ) { cb( fileCache ); return; }
+		get( 'hchat_get_project_files', {}, function ( err, res ) {
+			if ( ! err && res.success ) {
+				fileCache = res.data;
+				cb( fileCache );
+			} else {
+				cb( [] );
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------
+	   File dropdown helpers
+	--------------------------------------------------------------- */
+	var dropdownFiles = [];
+
+	function showFileDropdown( files ) {
+		fileDropdown.innerHTML = '';
+		dropdownActiveIdx = -1;
+		dropdownFiles = files;
+
+		if ( ! files || ! files.length ) {
+			fileDropdown.classList.remove( 'hchat-file-dropdown--visible' );
+			return;
+		}
+
+		files.forEach( function ( f, idx ) {
+			var item = document.createElement( 'div' );
+			item.className = 'hchat-file-dropdown-item';
+			item.dataset.idx = idx;
+			item.textContent = '📎 ' + f.file_name;
+			item.addEventListener( 'mousedown', function ( e ) {
+				e.preventDefault();
+				selectFileFromDropdown( f );
+			} );
+			fileDropdown.appendChild( item );
+		} );
+
+		fileDropdown.classList.add( 'hchat-file-dropdown--visible' );
+	}
+
+	function hideFileDropdown() {
+		fileDropdown.classList.remove( 'hchat-file-dropdown--visible' );
+		fileDropdown.innerHTML = '';
+		dropdownActiveIdx = -1;
+		dropdownFiles = [];
+		atQuery = null;
+	}
+
+	function setDropdownActive( idx ) {
+		var items = fileDropdown.querySelectorAll( '.hchat-file-dropdown-item' );
+		items.forEach( function ( item, i ) {
+			if ( i === idx ) {
+				item.classList.add( 'hchat-file-dropdown-item--active' );
+				item.scrollIntoView( { block: 'nearest' } );
+			} else {
+				item.classList.remove( 'hchat-file-dropdown-item--active' );
+			}
+		} );
+		dropdownActiveIdx = idx;
+	}
+
+	function selectFileFromDropdown( f ) {
+		// Replace the @query in the textarea with the token.
+		var val = inputEl.value;
+		var atIdx = val.lastIndexOf( '@' );
+		if ( atIdx === -1 ) { hideFileDropdown(); return; }
+		var token = '@[' + f.file_name + '|' + f.id + ']';
+		inputEl.value = val.substring( 0, atIdx ) + token + ' ';
+		hideFileDropdown();
+		inputEl.focus();
+	}
+
+	/* ---------------------------------------------------------------
+	   Handle textarea input for @ autocomplete
+	--------------------------------------------------------------- */
+	inputEl.addEventListener( 'input', function () {
+		// Auto-resize.
+		this.style.height = 'auto';
+		this.style.height = Math.min( this.scrollHeight, 90 ) + 'px';
+
+		var val = this.value;
+		var caretPos = this.selectionStart;
+		var textBefore = val.substring( 0, caretPos );
+		var atIdx = textBefore.lastIndexOf( '@' );
+
+		if ( atIdx === -1 ) {
+			hideFileDropdown();
+			return;
+		}
+
+		// Check no space between @ and caret.
+		var query = textBefore.substring( atIdx + 1 );
+		if ( query.indexOf( ' ' ) !== -1 ) {
+			hideFileDropdown();
+			return;
+		}
+
+		atQuery = query;
+		fetchProjectFiles( function ( files ) {
+			var filtered = files.filter( function ( f ) {
+				return f.file_name.toLowerCase().indexOf( query.toLowerCase() ) !== -1;
+			} );
+			showFileDropdown( filtered.slice( 0, 20 ) );
+		} );
+	} );
+
+	inputEl.addEventListener( 'keydown', function ( e ) {
+		var isDropdownOpen = fileDropdown.classList.contains( 'hchat-file-dropdown--visible' );
+
+		if ( isDropdownOpen ) {
+			var items = fileDropdown.querySelectorAll( '.hchat-file-dropdown-item' );
+			if ( e.key === 'ArrowDown' ) {
+				e.preventDefault();
+				var next = ( dropdownActiveIdx + 1 ) % items.length;
+				setDropdownActive( next );
+				return;
+			}
+			if ( e.key === 'ArrowUp' ) {
+				e.preventDefault();
+				var prev = dropdownActiveIdx <= 0 ? items.length - 1 : dropdownActiveIdx - 1;
+				setDropdownActive( prev );
+				return;
+			}
+			if ( e.key === 'Enter' ) {
+				if ( dropdownActiveIdx >= 0 && dropdownFiles[ dropdownActiveIdx ] ) {
+					e.preventDefault();
+					selectFileFromDropdown( dropdownFiles[ dropdownActiveIdx ] );
+					return;
+				}
+				// No item selected: fall through to send.
+				hideFileDropdown();
+			}
+			if ( e.key === 'Escape' ) {
+				e.preventDefault();
+				hideFileDropdown();
+				return;
+			}
+		}
+
+		if ( e.key === 'Enter' && ! e.shiftKey && ! isDropdownOpen ) {
+			e.preventDefault();
+			sendMessage();
+		}
+	} );
+
+	// Close dropdown on outside click.
+	document.addEventListener( 'click', function ( e ) {
+		if ( ! fileDropdown.contains( e.target ) && e.target !== inputEl ) {
+			hideFileDropdown();
+		}
+	} );
 
 	/* ---------------------------------------------------------------
 	   Event listeners
@@ -331,20 +751,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 	sendBtn.addEventListener( 'click', sendMessage );
 
-	inputEl.addEventListener( 'keydown', function ( e ) {
-		if ( e.key === 'Enter' && ! e.shiftKey ) {
-			e.preventDefault();
-			sendMessage();
-		}
-	} );
-
-	// Auto-resize textarea.
-	inputEl.addEventListener( 'input', function () {
-		this.style.height = 'auto';
-		this.style.height = Math.min( this.scrollHeight, 90 ) + 'px';
-	} );
-
 	loadEarlierBtn.addEventListener( 'click', loadEarlierMessages );
+
+	loadEarlierActivityBtn.addEventListener( 'click', loadEarlierActivity );
+
+	tabButtons.forEach( function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			switchTab( btn.getAttribute( 'data-tab' ) );
+		} );
+	} );
 
 	/* ---------------------------------------------------------------
 	   Initialise on page load
@@ -360,6 +775,9 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 	// Always poll unread count (even when panel is closed).
 	badgeTimer = setInterval( pollUnreadCount, 12000 );
+
+	// Poll activity unseen count every 15 seconds.
+	activityBadgeTimer = setInterval( pollActivityUnseenCount, 15000 );
 
 }());
 } );

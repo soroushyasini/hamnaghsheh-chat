@@ -26,6 +26,7 @@ require_once HCHAT_DIR . 'includes/class-hchat-activator.php';
 require_once HCHAT_DIR . 'includes/class-hchat-permissions.php';
 require_once HCHAT_DIR . 'includes/class-hchat-messages.php';
 require_once HCHAT_DIR . 'includes/class-hchat-notify.php';
+require_once HCHAT_DIR . 'includes/class-hchat-activity.php';
 require_once HCHAT_DIR . 'includes/class-hchat-ajax.php';
 
 /* -------------------------------------------------------------------------

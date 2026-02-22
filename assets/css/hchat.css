@@ -225,47 +225,265 @@
 	display: flex;
 	align-items: flex-end;
 	gap: 8px;
-	padding: 10px 12px;
-	border-top: 1px solid #e8edf2;
+	padding: 12px 14px;
+	border-top: 1px solid rgba(9, 55, 91, 0.08);
+	background: #fff;
 	flex-shrink: 0;
 }
 
 .hchat-input {
 	flex: 1;
 	resize: none;
-	border: 1px solid #d0dce8;
+	border: 1.5px solid rgba(9, 55, 91, 0.15);
 	border-radius: 20px;
 	padding: 8px 14px;
 	font-family: var(--hchat-font);
-	font-size: 13px;
-	line-height: 1.5;
+	font-size: 0.875rem;
+	line-height: 1.4;
 	color: #1a1a2e;
 	outline: none;
-	transition: border-color 0.15s;
+	transition: border-color 0.2s;
+	background: #f8fafc;
 	max-height: 90px;
 	overflow-y: auto;
 }
 
-.hchat-input:focus { border-color: var(--hchat-accent); }
+.hchat-input:focus {
+	border-color: #1a6fa8;
+	background: #fff;
+}
 
 .hchat-send-btn {
-	width:  38px;
-	height: 38px;
+	width: 40px;
+	height: 40px;
+	min-width: 40px;
 	border-radius: 50%;
-	background: var(--hchat-accent);
+	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%);
 	border: none;
+	color: white;
 	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: #fff;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+	box-shadow: 0 2px 8px rgba(26, 111, 168, 0.35);
 	flex-shrink: 0;
-	transition: background 0.15s, transform 0.1s;
 }
 
-.hchat-send-btn:hover { background: #155d8e; }
-.hchat-send-btn:active { transform: scale(0.93); }
-.hchat-send-btn:disabled { background: #b0c4d8; cursor: not-allowed; }
+.hchat-send-btn:hover:not(:disabled) {
+	transform: scale(1.08);
+	box-shadow: 0 4px 14px rgba(26, 111, 168, 0.5);
+}
+
+.hchat-send-btn:active:not(:disabled) {
+	transform: scale(0.95);
+}
+
+.hchat-send-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+
+/* ---------- Tab bar ---------- */
+.hchat-tabs {
+	display: flex;
+	border-bottom: 1px solid rgba(9, 55, 91, 0.1);
+	background: #f8fafc;
+	flex-shrink: 0;
+}
+
+.hchat-tab {
+	flex: 1;
+	padding: 10px 8px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: #6b7280;
+	background: none;
+	border: none;
+	cursor: pointer;
+	position: relative;
+	transition: color 0.2s;
+	font-family: var(--hchat-font);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+}
+
+.hchat-tab--active {
+	color: var(--hchat-primary);
+	font-weight: 700;
+}
+
+.hchat-tab--active::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 10%;
+	right: 10%;
+	height: 2px;
+	background: var(--hchat-primary);
+	border-radius: 2px 2px 0 0;
+}
+
+.hchat-tab-badge {
+	background: #ef4444;
+	color: white;
+	font-size: 0.65rem;
+	padding: 1px 5px;
+	border-radius: 10px;
+	min-width: 16px;
+	text-align: center;
+	display: none;
+}
+
+.hchat-tab-badge--visible {
+	display: inline-block;
+}
+
+/* ---------- Chat pane wrapper ---------- */
+.hchat-chat-pane {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	min-height: 0;
+}
+
+/* ---------- Activity pane ---------- */
+.hchat-activity-pane {
+	flex: 1;
+	overflow-y: auto;
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 0;
+}
+
+.hchat-activity-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.hchat-activity-card {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	background: #f8fafc;
+	border: 1px solid rgba(9, 55, 91, 0.07);
+	border-radius: 10px;
+	padding: 10px 12px;
+	transition: background 0.15s;
+}
+
+.hchat-activity-card:hover {
+	background: #f0f4f8;
+}
+
+.hchat-activity-card--unseen {
+	background: rgba(26, 111, 168, 0.05);
+	border-color: rgba(26, 111, 168, 0.15);
+}
+
+.hchat-activity-icon {
+	font-size: 1.2rem;
+	line-height: 1;
+	padding-top: 2px;
+	flex-shrink: 0;
+}
+
+.hchat-activity-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.hchat-activity-filename {
+	font-weight: 600;
+	color: #1e3a5f;
+	font-size: 0.85rem;
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.hchat-activity-action {
+	color: #4b5563;
+	font-size: 0.82rem;
+	margin-right: 4px;
+}
+
+.hchat-activity-meta {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 3px;
+	font-size: 0.75rem;
+	color: #9ca3af;
+}
+
+/* ---------- File tag ---------- */
+.hchat-file-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	background: rgba(26, 111, 168, 0.12);
+	color: #1a6fa8;
+	border: 1px solid rgba(26, 111, 168, 0.25);
+	border-radius: 12px;
+	padding: 2px 8px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	cursor: default;
+	white-space: nowrap;
+}
+
+.hchat-file-tag--deleted {
+	background: rgba(107, 114, 128, 0.1);
+	color: #9ca3af;
+	border-color: rgba(107, 114, 128, 0.2);
+	text-decoration: line-through;
+}
+
+/* ---------- Autocomplete dropdown ---------- */
+.hchat-file-dropdown {
+	position: absolute;
+	bottom: calc(100% + 4px);
+	right: 0;
+	left: 0;
+	background: white;
+	border: 1px solid rgba(9, 55, 91, 0.15);
+	border-radius: 10px;
+	box-shadow: 0 4px 16px rgba(9, 55, 91, 0.12);
+	max-height: 180px;
+	overflow-y: auto;
+	z-index: 10001;
+	display: none;
+}
+
+.hchat-file-dropdown--visible {
+	display: block;
+}
+
+.hchat-file-dropdown-item {
+	padding: 8px 14px;
+	cursor: pointer;
+	font-size: 0.85rem;
+	color: #1e3a5f;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: background 0.1s;
+	direction: rtl;
+}
+
+.hchat-file-dropdown-item:hover,
+.hchat-file-dropdown-item--active {
+	background: rgba(26, 111, 168, 0.08);
+}
 
 /* ---------- Mobile ---------- */
 @media (max-width: 768px) {
