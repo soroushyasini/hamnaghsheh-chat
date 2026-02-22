@@ -444,13 +444,32 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	/* ---------------------------------------------------------------
 	   Activity feed
 	--------------------------------------------------------------- */
-	var activityIcons = {
-		upload:   '📤',
-		replace:  '🔄',
-		'delete': '🗑️',
-		download: '📥',
-		see:      '👁️'
-	};
+	function getActivityIcon( action ) {
+		var icons = {
+			upload: {
+				bg: '#dcfce7', color: '#16a34a',
+				svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'
+			},
+			download: {
+				bg: '#dbeafe', color: '#2563eb',
+				svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>'
+			},
+			replace: {
+				bg: '#ffedd5', color: '#ea580c',
+				svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>'
+			},
+			'delete': {
+				bg: '#fee2e2', color: '#dc2626',
+				svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>'
+			},
+			see: {
+				bg: '#f3e8ff', color: '#9333ea',
+				svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+			}
+		};
+		var ic = icons[ action ] || icons.see;
+		return '<div class="hchat-activity-icon-wrap" style="background:' + ic.bg + ';color:' + ic.color + ';">' + ic.svg + '</div>';
+	}
 
 	var activityLabels = {
 		upload:   'آپلود شد',
@@ -461,7 +480,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	};
 
 	function renderActivityCard( ev ) {
-		var icon  = activityIcons[ ev.action_type ]  || '📄';
 		var label = activityLabels[ ev.action_type ] || ev.action_type;
 		var time  = formatActivityTime( ev.created_at );
 
@@ -469,7 +487,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		card.className  = 'hchat-activity-card';
 		card.dataset.id = ev.id;
 		card.innerHTML =
-			'<div class="hchat-activity-icon">' + escapeHtml( icon ) + '</div>' +
+			getActivityIcon( ev.action_type ) +
 			'<div class="hchat-activity-body">' +
 				'<div class="hchat-activity-top">' +
 					'<span class="hchat-activity-filename">' + escapeHtml( ev.file_name ) + '</span>' +
@@ -682,7 +700,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	inputEl.addEventListener( 'input', function () {
 		// Auto-resize.
 		this.style.height = 'auto';
-		this.style.height = Math.min( this.scrollHeight, 90 ) + 'px';
+		var newHeight = Math.min( this.scrollHeight, 90 );
+		this.style.height = newHeight + 'px';
 		// @ autocomplete.
 		onInputChange();
 	} );

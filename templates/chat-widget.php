@@ -80,8 +80,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					dir="rtl"
 				></textarea>
 				<button id="hchat-send-btn" class="hchat-send-btn" aria-label="<?php esc_attr_e( 'ارسال', 'hamnaghsheh-chat' ); ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-						<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+						<line x1="22" y1="2" x2="11" y2="13"></line>
+						<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
 					</svg>
 				</button>
 			</div>
