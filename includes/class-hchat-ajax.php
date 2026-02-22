@@ -16,11 +16,16 @@ class HChat_Ajax {
 	 * Register all AJAX actions.
 	 */
 	public function register_hooks() {
-		add_action( 'wp_ajax_hchat_send_message',  array( $this, 'send_message' ) );
-		add_action( 'wp_ajax_hchat_get_messages',  array( $this, 'get_messages' ) );
-		add_action( 'wp_ajax_hchat_load_earlier',  array( $this, 'load_earlier' ) );
-		add_action( 'wp_ajax_hchat_mark_read',     array( $this, 'mark_read' ) );
-		add_action( 'wp_ajax_hchat_unread_count',  array( $this, 'unread_count' ) );
+		add_action( 'wp_ajax_hchat_send_message',           array( $this, 'send_message' ) );
+		add_action( 'wp_ajax_hchat_get_messages',           array( $this, 'get_messages' ) );
+		add_action( 'wp_ajax_hchat_load_earlier',           array( $this, 'load_earlier' ) );
+		add_action( 'wp_ajax_hchat_mark_read',              array( $this, 'mark_read' ) );
+		add_action( 'wp_ajax_hchat_unread_count',           array( $this, 'unread_count' ) );
+		add_action( 'wp_ajax_hchat_get_project_files',      array( $this, 'ajax_get_project_files' ) );
+		add_action( 'wp_ajax_hchat_get_activity',           array( $this, 'ajax_get_activity' ) );
+		add_action( 'wp_ajax_hchat_load_earlier_activity',  array( $this, 'ajax_load_earlier_activity' ) );
+		add_action( 'wp_ajax_hchat_mark_activity_seen',     array( $this, 'ajax_mark_activity_seen' ) );
+		add_action( 'wp_ajax_hchat_activity_unseen_count',  array( $this, 'ajax_activity_unseen_count' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -113,6 +118,84 @@ class HChat_Ajax {
 		$project_id = $this->verify_and_get_project_id();
 		$user_id    = get_current_user_id();
 		$count      = $this->messages->unread_count( $project_id, $user_id );
+		wp_send_json_success( array( 'count' => $count ) );
+	}
+
+	// -------------------------------------------------------------------------
+	// Activity & file endpoints
+	// -------------------------------------------------------------------------
+
+	public function ajax_get_project_files() {
+		check_ajax_referer( 'hchat_nonce', 'nonce' );
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$project_id = isset( $_GET['project_id'] ) ? absint( $_GET['project_id'] ) : 0;
+		if ( ! HChat_Permissions::can_access( $project_id, get_current_user_id() ) ) {
+			wp_send_json_error( 'Forbidden', 403 );
+		}
+		global $wpdb;
+		$table = $wpdb->prefix . 'hamnaghsheh_files';
+		$files = $wpdb->get_results( $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"SELECT id, file_name FROM {$table} WHERE project_id = %d ORDER BY uploaded_at DESC",
+			$project_id
+		) );
+		wp_send_json_success( $files );
+	}
+
+	public function ajax_get_activity() {
+		check_ajax_referer( 'hchat_nonce', 'nonce' );
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$project_id = isset( $_GET['project_id'] ) ? absint( $_GET['project_id'] ) : 0;
+		$after_id   = isset( $_GET['after_id'] )   ? absint( $_GET['after_id'] )   : 0;
+		if ( ! HChat_Permissions::can_access( $project_id, get_current_user_id() ) ) {
+			wp_send_json_error( 'Forbidden', 403 );
+		}
+		$events = HChat_Activity::get_events( $project_id, $after_id );
+		wp_send_json_success( $events );
+	}
+
+	public function ajax_load_earlier_activity() {
+		check_ajax_referer( 'hchat_nonce', 'nonce' );
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$project_id = isset( $_GET['project_id'] ) ? absint( $_GET['project_id'] ) : 0;
+		$before_id  = isset( $_GET['before_id'] )  ? absint( $_GET['before_id'] )  : 0;
+		if ( ! HChat_Permissions::can_access( $project_id, get_current_user_id() ) ) {
+			wp_send_json_error( 'Forbidden', 403 );
+		}
+		$events = HChat_Activity::get_events_before( $project_id, $before_id );
+		wp_send_json_success( $events );
+	}
+
+	public function ajax_mark_activity_seen() {
+		check_ajax_referer( 'hchat_nonce', 'nonce' );
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$project_id  = isset( $_POST['project_id'] )  ? absint( $_POST['project_id'] )  : 0;
+		$last_log_id = isset( $_POST['last_log_id'] ) ? absint( $_POST['last_log_id'] ) : 0;
+		if ( ! HChat_Permissions::can_access( $project_id, get_current_user_id() ) ) {
+			wp_send_json_error( 'Forbidden', 403 );
+		}
+		HChat_Activity::mark_seen( $project_id, get_current_user_id(), $last_log_id );
+		wp_send_json_success();
+	}
+
+	public function ajax_activity_unseen_count() {
+		check_ajax_referer( 'hchat_nonce', 'nonce' );
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$project_id = isset( $_GET['project_id'] ) ? absint( $_GET['project_id'] ) : 0;
+		if ( ! HChat_Permissions::can_access( $project_id, get_current_user_id() ) ) {
+			wp_send_json_error( 'Forbidden', 403 );
+		}
+		$count = HChat_Activity::get_unseen_count( $project_id, get_current_user_id() );
 		wp_send_json_success( array( 'count' => $count ) );
 	}
 

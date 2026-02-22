@@ -31,43 +31,74 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</button>
 		</div>
 
-		<!-- Messages area -->
-		<div id="hchat-messages" class="hchat-messages">
-
-			<!-- Load earlier button -->
-			<button id="hchat-load-earlier-btn" class="hchat-load-earlier-btn" style="display:none;">
-				<?php esc_html_e( 'پیام‌های قدیمی‌تر', 'hamnaghsheh-chat' ); ?>
+		<!-- Tabs -->
+		<div class="hchat-tabs">
+			<button class="hchat-tab hchat-tab--active" data-tab="chat">
+				<?php esc_html_e( '💬 چت', 'hamnaghsheh-chat' ); ?>
+				<span class="hchat-tab-badge" id="hchat-chat-badge-tab" style="display:none;"></span>
 			</button>
-
-			<!-- Message list -->
-			<div id="hchat-message-list" class="hchat-message-list">
-				<!-- Messages rendered by JS -->
-			</div>
-
-			<!-- Empty state -->
-			<div id="hchat-empty-state" class="hchat-empty-state" style="display:none;">
-				<span class="hchat-empty-icon">💬</span>
-				<p><?php esc_html_e( 'هنوز پیامی ارسال نشده. اولین نفر باشید!', 'hamnaghsheh-chat' ); ?></p>
-			</div>
-
-		</div><!-- /.hchat-messages -->
-
-		<!-- Input area -->
-		<div class="hchat-input-area">
-			<textarea
-				id="hchat-input"
-				class="hchat-input"
-				placeholder="<?php esc_attr_e( 'پیام خود را بنویسید...', 'hamnaghsheh-chat' ); ?>"
-				rows="1"
-				maxlength="1000"
-				dir="rtl"
-			></textarea>
-			<button id="hchat-send-btn" class="hchat-send-btn" aria-label="<?php esc_attr_e( 'ارسال', 'hamnaghsheh-chat' ); ?>">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-					<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-				</svg>
+			<button class="hchat-tab" data-tab="activity">
+				<?php esc_html_e( '📋 رویدادها', 'hamnaghsheh-chat' ); ?>
+				<span class="hchat-tab-badge" id="hchat-activity-badge-tab" style="display:none;"></span>
 			</button>
 		</div>
+
+		<!-- Chat pane -->
+		<div id="hchat-chat-pane" class="hchat-pane">
+
+			<!-- Messages area -->
+			<div id="hchat-messages" class="hchat-messages">
+
+				<!-- Load earlier button -->
+				<button id="hchat-load-earlier-btn" class="hchat-load-earlier-btn" style="display:none;">
+					<?php esc_html_e( 'پیام‌های قدیمی‌تر', 'hamnaghsheh-chat' ); ?>
+				</button>
+
+				<!-- Message list -->
+				<div id="hchat-message-list" class="hchat-message-list">
+					<!-- Messages rendered by JS -->
+				</div>
+
+				<!-- Empty state -->
+				<div id="hchat-empty-state" class="hchat-empty-state" style="display:none;">
+					<span class="hchat-empty-icon">💬</span>
+					<p><?php esc_html_e( 'هنوز پیامی ارسال نشده. اولین نفر باشید!', 'hamnaghsheh-chat' ); ?></p>
+				</div>
+
+			</div><!-- /.hchat-messages -->
+
+			<!-- Input area -->
+			<div class="hchat-input-area">
+				<!-- File autocomplete dropdown -->
+				<div id="hchat-file-dropdown" class="hchat-file-dropdown" style="display:none;"></div>
+				<textarea
+					id="hchat-input"
+					class="hchat-input"
+					placeholder="<?php esc_attr_e( 'پیام خود را بنویسید...', 'hamnaghsheh-chat' ); ?>"
+					rows="1"
+					maxlength="1000"
+					dir="rtl"
+				></textarea>
+				<button id="hchat-send-btn" class="hchat-send-btn" aria-label="<?php esc_attr_e( 'ارسال', 'hamnaghsheh-chat' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+						<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+					</svg>
+				</button>
+			</div>
+
+		</div><!-- /#hchat-chat-pane -->
+
+		<!-- Activity pane -->
+		<div id="hchat-activity-pane" class="hchat-pane hchat-activity-pane" style="display:none;">
+			<button id="hchat-load-earlier-activity-btn" class="hchat-load-earlier-btn" style="display:none;">
+				<?php esc_html_e( 'رویدادهای قدیمی‌تر', 'hamnaghsheh-chat' ); ?>
+			</button>
+			<div id="hchat-activity-list" class="hchat-activity-list"></div>
+			<div id="hchat-activity-empty" class="hchat-empty-state" style="display:none;">
+				<span>📋</span>
+				<p><?php esc_html_e( 'هنوز رویدادی ثبت نشده.', 'hamnaghsheh-chat' ); ?></p>
+			</div>
+		</div><!-- /#hchat-activity-pane -->
 
 	</div><!-- /.hchat-panel -->
 
