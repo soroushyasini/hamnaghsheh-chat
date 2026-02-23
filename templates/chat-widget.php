@@ -12,8 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<!-- Toggle button -->
 	<button id="hchat-toggle-btn" class="hchat-toggle-btn" aria-label="<?php esc_attr_e( 'باز کردن چت', 'hamnaghsheh-chat' ); ?>">
-		<svg class="hchat-icon-chat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
-			<path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+		<svg class="hchat-icon-chat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="26" height="26">
+			<!-- Modern chat bubble with three dots inside -->
+			<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="white" opacity="0.95"/>
+			<circle cx="9" cy="11" r="1" fill="#09375B"/>
+			<circle cx="12" cy="11" r="1" fill="#09375B"/>
+			<circle cx="15" cy="11" r="1" fill="#09375B"/>
 		</svg>
 		<span id="hchat-badge" class="hchat-badge" style="display:none;">0</span>
 	</button>
@@ -25,8 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="hchat-header">
 			<span class="hchat-header-title"><?php esc_html_e( 'چت پروژه', 'hamnaghsheh-chat' ); ?></span>
 			<button id="hchat-close-btn" class="hchat-close-btn" aria-label="<?php esc_attr_e( 'بستن', 'hamnaghsheh-chat' ); ?>">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-					<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" width="16" height="16">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</button>
 		</div>
@@ -80,9 +85,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					dir="rtl"
 				></textarea>
 				<button id="hchat-send-btn" class="hchat-send-btn" aria-label="<?php esc_attr_e( 'ارسال', 'hamnaghsheh-chat' ); ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
 						<line x1="22" y1="2" x2="11" y2="13"></line>
-						<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+						<polygon points="22 2 15 22 11 13 2 9 22 2" fill="#ffffff" stroke="#ffffff"></polygon>
 					</svg>
 				</button>
 			</div>

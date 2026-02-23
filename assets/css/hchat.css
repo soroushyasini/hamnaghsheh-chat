@@ -26,46 +26,77 @@
 }
 
 /* ---------- Toggle button ---------- */
-.hchat-toggle-btn {
-	position: relative;
-	width:  56px;
-	height: 56px;
-	border-radius: 50%;
-	background: var(--hchat-primary);
-	border: none;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #fff;
-	box-shadow: 0 4px 16px rgba(9, 55, 91, 0.35);
-	transition: transform 0.2s, box-shadow 0.2s;
-	outline: none;
+.hchat-widget #hchat-toggle-btn,
+.hchat-widget .hchat-toggle-btn {
+	width: 56px !important;
+	height: 56px !important;
+	min-width: 56px !important;
+	min-height: 56px !important;
+	max-height: 56px !important;
+	border-radius: 50% !important;
+	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%) !important;
+	background-color: transparent !important;
+	border: none !important;
+	border-width: 0 !important;
+	padding: 0 !important;
+	color: #ffffff !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	box-shadow: 0 4px 20px rgba(9, 55, 91, 0.4) !important;
+	transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+	text-transform: none !important;
+	font-weight: normal !important;
+	line-height: 1 !important;
+	position: relative !important;
+	flex-shrink: 0 !important;
+	gap: 0 !important;
+	outline: none !important;
 }
-
-.hchat-toggle-btn:hover {
-	transform: scale(1.08);
-	box-shadow: 0 6px 20px rgba(9, 55, 91, 0.45);
+.hchat-widget #hchat-toggle-btn:hover,
+.hchat-widget .hchat-toggle-btn:hover {
+	transform: scale(1.08) !important;
+	box-shadow: 0 6px 24px rgba(9, 55, 91, 0.55) !important;
+	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%) !important;
+	background-color: transparent !important;
+	color: #ffffff !important;
+	border-color: transparent !important;
+}
+.hchat-widget #hchat-toggle-btn:active,
+.hchat-widget .hchat-toggle-btn:active {
+	transform: scale(0.95) !important;
+}
+.hchat-widget #hchat-toggle-btn svg,
+.hchat-widget .hchat-toggle-btn svg {
+	width: 26px !important;
+	height: 26px !important;
+	fill: #ffffff !important;
+	stroke: #ffffff !important;
+	flex-shrink: 0 !important;
+	display: block !important;
 }
 
 /* ---------- Unread badge ---------- */
-.hchat-badge {
-	position: absolute;
-	top:   2px;
-	right: 2px;
-	min-width:  18px;
-	height: 18px;
-	border-radius: 9px;
-	background: #e53935;
-	color: #fff;
-	font-size: 11px;
-	font-weight: 700;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0 4px;
-	border: 2px solid #fff;
-	line-height: 1;
+.hchat-widget .hchat-badge {
+	position: absolute !important;
+	top: -4px !important;
+	right: -4px !important;
+	background: #ef4444 !important;
+	color: #ffffff !important;
+	font-size: 0.65rem !important;
+	font-weight: 700 !important;
+	min-width: 18px !important;
+	height: 18px !important;
+	border-radius: 10px !important;
+	display: none !important;
+	align-items: center !important;
+	justify-content: center !important;
+	padding: 0 4px !important;
+	line-height: 1 !important;
+	border: 2px solid white !important;
+	box-shadow: none !important;
+	text-transform: none !important;
 }
 
 /* ---------- Chat panel ---------- */
@@ -105,19 +136,52 @@
 	font-weight: 700;
 }
 
-.hchat-close-btn {
-	background: none;
-	border: none;
-	color: #fff;
-	cursor: pointer;
-	padding: 2px;
-	display: flex;
-	align-items: center;
-	opacity: 0.85;
-	transition: opacity 0.15s;
+/* ---------- Close button ---------- */
+.hchat-widget #hchat-close-btn,
+.hchat-widget .hchat-close-btn {
+	width: 30px !important;
+	height: 30px !important;
+	min-width: 30px !important;
+	min-height: 30px !important;
+	max-height: 30px !important;
+	border-radius: 50% !important;
+	background: rgba(255, 255, 255, 0.15) !important;
+	background-color: rgba(255, 255, 255, 0.15) !important;
+	border: none !important;
+	border-width: 0 !important;
+	padding: 0 !important;
+	color: #ffffff !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: background 0.15s ease !important;
+	flex-shrink: 0 !important;
+	text-transform: none !important;
+	font-weight: normal !important;
+	line-height: 1 !important;
+	gap: 0 !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
-
-.hchat-close-btn:hover { opacity: 1; }
+.hchat-widget #hchat-close-btn:hover,
+.hchat-widget .hchat-close-btn:hover {
+	background: rgba(255, 255, 255, 0.28) !important;
+	background-color: rgba(255, 255, 255, 0.28) !important;
+	color: #ffffff !important;
+	border-color: transparent !important;
+	transform: none !important;
+}
+.hchat-widget #hchat-close-btn svg,
+.hchat-widget .hchat-close-btn svg {
+	width: 16px !important;
+	height: 16px !important;
+	fill: #ffffff !important;
+	stroke: #ffffff !important;
+	display: block !important;
+	flex-shrink: 0 !important;
+	color: #ffffff !important;
+}
 
 /* ---------- Messages area ---------- */
 .hchat-messages {
@@ -264,11 +328,6 @@
 		left: 12px;
 	}
 
-	.hchat-toggle-btn {
-		width:  48px;
-		height: 48px;
-	}
-
 	.hchat-panel {
 		width: calc(100vw - 24px);
 		height: 60vh;
@@ -277,44 +336,63 @@
 	}
 }
 
-/* ---------- Send button redesign ---------- */
-.hchat-send-btn {
-	width: 40px;
-	height: 40px;
-	min-width: 40px;
-	border-radius: 50%;
-	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%);
-	border: none;
-	color: #ffffff;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: transform 0.15s ease, box-shadow 0.15s ease;
-	box-shadow: 0 2px 8px rgba(26, 111, 168, 0.4);
-	flex-shrink: 0;
-	padding: 0;
+/* ---------- Send button ---------- */
+.hchat-widget #hchat-send-btn,
+.hchat-widget .hchat-send-btn {
+	width: 40px !important;
+	height: 40px !important;
+	min-width: 40px !important;
+	min-height: 40px !important;
+	max-height: 40px !important;
+	border-radius: 50% !important;
+	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%) !important;
+	background-color: transparent !important;
+	border: none !important;
+	border-width: 0 !important;
+	padding: 0 !important;
+	color: #ffffff !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	box-shadow: 0 2px 8px rgba(26, 111, 168, 0.4) !important;
+	transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+	flex-shrink: 0 !important;
+	text-transform: none !important;
+	font-weight: normal !important;
+	line-height: 1 !important;
+	gap: 0 !important;
+	outline: none !important;
 }
-
-.hchat-send-btn svg {
-	stroke: #ffffff;
-	display: block;
+.hchat-widget #hchat-send-btn svg,
+.hchat-widget .hchat-send-btn svg {
+	width: 18px !important;
+	height: 18px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
+	display: block !important;
+	flex-shrink: 0 !important;
+	color: #ffffff !important;
 }
-
-.hchat-send-btn:hover:not(:disabled) {
-	transform: scale(1.08);
-	box-shadow: 0 4px 14px rgba(26, 111, 168, 0.55);
+.hchat-widget #hchat-send-btn:hover:not(:disabled),
+.hchat-widget .hchat-send-btn:hover:not(:disabled) {
+	transform: scale(1.08) !important;
+	box-shadow: 0 4px 14px rgba(26, 111, 168, 0.55) !important;
+	background: linear-gradient(135deg, #09375B 0%, #1a6fa8 100%) !important;
+	background-color: transparent !important;
+	color: #ffffff !important;
+	border-color: transparent !important;
 }
-
-.hchat-send-btn:active:not(:disabled) {
-	transform: scale(0.94);
+.hchat-widget #hchat-send-btn:active:not(:disabled),
+.hchat-widget .hchat-send-btn:active:not(:disabled) {
+	transform: scale(0.94) !important;
 }
-
-.hchat-send-btn:disabled {
-	opacity: 0.45;
-	cursor: not-allowed;
-	transform: none;
-	box-shadow: none;
+.hchat-widget #hchat-send-btn:disabled,
+.hchat-widget .hchat-send-btn:disabled {
+	opacity: 0.45 !important;
+	cursor: not-allowed !important;
+	transform: none !important;
+	box-shadow: none !important;
 }
 
 /* ---------- Tabs ---------- */
